@@ -1,6 +1,6 @@
-package com.vietdp.spring.batch.service;
+package com.vietdp.spring.service;
 
-import com.vietdp.spring.batch.Response;
+import com.vietdp.spring.Response;
 import org.springframework.batch.core.JobParametersInvalidException;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;

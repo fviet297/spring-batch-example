@@ -1,4 +1,4 @@
-package com.vietdp.spring.batch;
+package com.vietdp.spring;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;

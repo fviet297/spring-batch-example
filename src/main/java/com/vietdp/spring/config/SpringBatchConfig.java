@@ -1,17 +1,35 @@
-package com.vietdp.spring.batch.config;
+package com.vietdp.spring.config;
 
 import lombok.AllArgsConstructor;
+import org.springframework.batch.core.BatchStatus;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.explore.JobExplorer;
+import org.springframework.batch.core.explore.support.MapJobExplorerFactoryBean;
+import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.launch.JobOperator;
+import org.springframework.batch.core.launch.support.SimpleJobLauncher;
+import org.springframework.batch.core.launch.support.SimpleJobOperator;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.repository.dao.MapJobExecutionDao;
+import org.springframework.batch.core.repository.dao.MapJobInstanceDao;
+import org.springframework.batch.core.repository.dao.MapStepExecutionDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import reactor.core.publisher.Flux;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -52,9 +70,14 @@ public class SpringBatchConfig {
         }
 
     }
+
     @Bean
     public HibernateJpaVendorAdapter jpaVendorAdapter() {
         return new HibernateJpaVendorAdapter();
     }
 
+    @Bean
+    public SseEmitter sseEmitter() {
+        return new SseEmitter();
+    }
 }

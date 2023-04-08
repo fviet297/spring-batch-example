@@ -1,6 +1,6 @@
-package com.vietdp.spring.batch.repository;
+package com.vietdp.spring.repository;
 
-import com.vietdp.spring.batch.entity.DtEcomBranchEntity;
+import com.vietdp.spring.entity.DtEcomBranchEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

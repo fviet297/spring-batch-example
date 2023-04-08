@@ -1,26 +1,27 @@
 package com.vietdp.spring.batch.writer;
 
-import com.vietdp.spring.batch.config.MyJobListener;
-import com.vietdp.spring.batch.dto.DsEcomItem;
-import com.vietdp.spring.batch.dto.DtEcomBranch;
-import com.vietdp.spring.batch.dto.DtEcomItem;
-import com.vietdp.spring.batch.entity.DtEcomBranchEntity;
-import com.vietdp.spring.batch.entity.DtEcomItemEntity;
-import com.vietdp.spring.batch.entity.DtEcomItemUOMEntity;
-import com.vietdp.spring.batch.repository.BranchRepository;
-import com.vietdp.spring.batch.repository.DtEcomItemRepository;
-import com.vietdp.spring.batch.repository.ItemUOMERepository;
-import org.apache.camel.builder.endpoint.dsl.SqlEndpointBuilderFactory;
-import org.springframework.batch.core.ExitStatus;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.StepExecution;
-import org.springframework.batch.core.annotation.AfterJob;
+import com.vietdp.spring.dto.DsEcomItem;
+import com.vietdp.spring.dto.DtEcomBranch;
+import com.vietdp.spring.dto.DtEcomItem;
+import com.vietdp.spring.entity.DtEcomBranchEntity;
+import com.vietdp.spring.entity.DtEcomItemEntity;
+import com.vietdp.spring.entity.DtEcomItemUOMEntity;
+import com.vietdp.spring.repository.BranchRepository;
+import com.vietdp.spring.repository.DtEcomItemRepository;
+import com.vietdp.spring.repository.ItemUOMERepository;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.batch.core.*;
 import org.springframework.batch.core.annotation.AfterStep;
+import org.springframework.batch.core.annotation.BeforeStep;
+import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
+import java.time.Duration;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,14 +30,13 @@ public class ProductWriter implements ItemWriter<DsEcomItem> {
     private final BranchRepository branchRepository;
     private final DtEcomItemRepository dtEcomItemRepository;
     private final ItemUOMERepository itemUOMERepository;
-    @Autowired
-    private final MyJobListener myJobListener;
+    private ExecutionContext executionContext;
 
-    public ProductWriter(BranchRepository branchRepository, DtEcomItemRepository dtEcomItemRepository, ItemUOMERepository itemUOMERepository, MyJobListener myJobListener) {
+
+    public ProductWriter(BranchRepository branchRepository, DtEcomItemRepository dtEcomItemRepository, ItemUOMERepository itemUOMERepository) {
         this.branchRepository = branchRepository;
         this.dtEcomItemRepository = dtEcomItemRepository;
         this.itemUOMERepository = itemUOMERepository;
-        this.myJobListener = myJobListener;
     }
 
     @Override
@@ -53,6 +53,8 @@ public class ProductWriter implements ItemWriter<DsEcomItem> {
             return dtEcomItemEntity;
         }).collect(Collectors.toList());
         dtEcomItemRepository.saveAll(dtEcomItemEntities);
+        this.executionContext.put("itemCount", dtEcomItemEntities.size());
+
 
         for (DtEcomItem i : dtEcomBranch.getDtEcomItem()) {
             List<DtEcomItemUOMEntity> dtEcomItemUOMEntities = i.getDtEcomItemUOMs().stream().map(k -> {
@@ -64,8 +66,26 @@ public class ProductWriter implements ItemWriter<DsEcomItem> {
         }
     }
 
+    @BeforeStep
+    private void getExecutionContext(StepExecution stepExecution) {
+        JobExecution jobExecution = stepExecution.getJobExecution();
+        this.executionContext = jobExecution.getExecutionContext();
+        System.out.println("Before Step Writter");
+
+    }
+
     @AfterStep
     private void setExecutionContext(StepExecution stepExecution) {
-        System.out.println(String.format("========END JOBID={} LOG_IMPORT_PRODUCT :::: TOTAL PRODUCTS={} IMPORTED ========", stepExecution.getJobExecutionId(), stepExecution.getWriteCount()));
+        System.out.println("AfterStep Step Writter");
+
+        System.out.println(String.format("========END JOBID= %s LOG_IMPORT_PRODUCT :::: TOTAL PRODUCTS= %s %s IMPORTED ========", stepExecution.getJobExecutionId(),
+                stepExecution.getJobExecution().getExecutionContext().getInt("itemCount"),stepExecution.getWriteCount()
+        ));
+        int itemcountjob = stepExecution.getJobExecution().getExecutionContext().getInt("itemCount");
+        this.executionContext.put("itemCountJob", ObjectUtils.anyNotNull(this.executionContext.get("itemCountJob"))?this.executionContext.getInt("itemCountJob"):0 +  itemcountjob);
+        Flux.interval(Duration.ofSeconds(1))
+                .map(seq -> ServerSentEvent.builder("SSE - " + seq + " " +  LocalTime.now().toString()).build());
+
     }
+
 }

@@ -1,6 +1,9 @@
-package com.vietdp.spring.batch.entity;
+package com.vietdp.spring.entity;
 
-import lombok.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -8,27 +11,23 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name="itemUOM")
+@Table(name="branch")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DtEcomItemUOMEntity {
-    @Column(name  = "itemGuid")
+public class DtEcomBranchEntity {
+    @Column(name  = "branchId")
     @Id
-    private String itemGuid;
+    private String branchId;
 
-    @Column(name  = "UOM")
-    private String UOM;
-
-    @Column(name  = "MinPackQty")
-    private Float minPackQty;
     @Column(name = "created_at")
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
+    private Date createdAt = new Date();
 
     @Column(name = "updated_at")
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
+
 }

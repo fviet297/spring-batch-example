@@ -1,4 +1,4 @@
-package com.vietdp.spring.batch.entity;
+package com.vietdp.spring.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

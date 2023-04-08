@@ -1,4 +1,4 @@
-package com.vietdp.spring.batch.dto;
+package com.vietdp.spring.dto;
 
 import lombok.Data;
 

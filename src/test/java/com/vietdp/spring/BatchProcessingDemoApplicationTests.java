@@ -1,4 +1,4 @@
-package com.vietdp.spring.batch;
+package com.vietdp.spring;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

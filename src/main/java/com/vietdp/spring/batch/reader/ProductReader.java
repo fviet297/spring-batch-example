@@ -1,20 +1,17 @@
 package com.vietdp.spring.batch.reader;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.vietdp.spring.batch.dto.DsEcomItem;
-import com.vietdp.spring.batch.dto.DtEcomBranch;
-import com.vietdp.spring.batch.dto.DtEcomItem;
-import com.vietdp.spring.batch.dto.ProductListDto;
+import com.vietdp.spring.dto.DsEcomItem;
 import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.AfterRead;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.annotation.BeforeJob;
+import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.batch.item.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.batch.item.ExecutionContext;
+import org.springframework.batch.item.ItemReader;
 import org.springframework.stereotype.Component;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
 import java.io.File;
 
 @Component
@@ -24,7 +21,8 @@ public class ProductReader implements ItemReader<DsEcomItem> {
     private JobExecution jobExecution;
     private ExecutionContext executionContext;
     private int count;
-
+    private int itemCount = 0;
+    private int itemCountJob = 0;
 
     public ProductReader(JobRepository jobRepository) {
         this.jobRepository = jobRepository;
@@ -38,7 +36,26 @@ public class ProductReader implements ItemReader<DsEcomItem> {
             DsEcomItem dsEcomItem = xmlMapper.readValue(new File("src/main/resources/xml/10_product_uat.xml"), DsEcomItem.class);
             return dsEcomItem;
         }else{
+//            jobExecution.setStatus(BatchStatus.COMPLETED);
             return null;
         }
     }
+    @BeforeStep
+    private void getExecutionContext(StepExecution stepExecution) {
+        this.jobExecution = stepExecution.getJobExecution();
+        this.executionContext = this.jobExecution.getExecutionContext();
+        System.out.println("Before Step Reader");
+    }
+    @AfterRead
+    private void setNumRecordReader() {
+        System.out.println("AfterRead  Reader");
+        itemCount++;
+    }
+    @BeforeJob
+    private void setCountItem(){
+        System.out.println("BeforeJob Step Reader");
+
+        this.executionContext.put("itemCountJob",this.itemCountJob);
+    }
+
 }
